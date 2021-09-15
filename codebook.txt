@@ -1,2 +1,3 @@
-abriviation	class	full.name
+abriviation	class	description
+GSM	char	
 
