@@ -1,0 +1,2 @@
+abriviation	class	full.name
+

@@ -7,9 +7,22 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+```
+
+# data.
+
+## codebook.
+
+```{r}
+codebook <- read.delim("codebook.txt")
+knitr::kable(codebook)
+
 ```
 
 ```{r}
 my_data <- read.csv("data/Smoker_Epigenetic_df.csv")
-plot(my_data[,2])
+str(my_data)
+my_data$Gender <- toupper(my_data$Gender)
+
 ```
