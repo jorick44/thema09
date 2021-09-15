@@ -7,6 +7,7 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
 library(ggplot2)
 ```
 
@@ -17,7 +18,6 @@ library(ggplot2)
 ```{r}
 codebook <- read.delim("codebook.txt")
 knitr::kable(codebook)
-
 ```
 
 ```{r}
