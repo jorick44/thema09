@@ -11,18 +11,39 @@ knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 ```
 
-# data.
+# Data.
 
-## codebook.
+## Codebook.
+
+Below here you find a codebook explaining each variable.
 
 ```{r}
-codebook <- read.delim("codebook.txt")
+codebook <- read.delim("codebook.txt", sep = ";")
 knitr::kable(codebook)
 ```
+
+## Reading the data.
+
+Here we load in the data. I noticed when downloading not all genders had the same case so I made all genders upper-case.
 
 ```{r}
 my_data <- read.csv("data/Smoker_Epigenetic_df.csv")
 str(my_data)
 my_data$Gender <- toupper(my_data$Gender)
+summary(my_data)
 
 ```
+
+# Visualisation.
+
+```{r}
+ggplot(data = my_data, aes(Age, cg00050873, colour = factor(Gender), shape = factor(Smoking.Status))) +
+  geom_point()
+
+```
+
+# research.
+
+## research question.
+
+Is it possible to predict the Methylation of certain CpG islands, with patient data like age, gender and smoker status, using Machine Learning?
