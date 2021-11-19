@@ -1,6 +1,6 @@
 Abriviation;Full Name;Class;Unit;Description
-GSM;GEO GSM sample number;char;NA;the number that can be used to obtain the full sample on NCBI.
-Smokes;Smoking Status;char;curent/never;if the patient smokes or not the value can be "current" or "never".
-Gender;Patient Gender;char;NA;The patients gender.
-Age;Patient Age;int;Years;The patients age.
+GSM;GEO GSM sample number;string;NA;the number that can be used to obtain the full sample on NCBI.
+Smokes;Smoking Status;string;curent/ never;if the patient smokes or not the value can be "current" or "never".
+Gender;Patient Gender;char;NA;The patient's gender.
+Age;Patient Age;int;Years;The patient's age.
 CG*******;CG******** Methylation Ratio;double;Ratio;Methylation rate of site ******* is replaced by it's number.

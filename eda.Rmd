@@ -1,49 +1,199 @@
 ---
 title: "data exploration"
 author: "Jorick Baron"
-date: "9/14/2021"
+date: "14/9/2021"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-
+library(knitr)
 library(ggplot2)
+library(pander)
+library(dplyr)
+library(ggfortify)
+library(factoextra)
+opts_chunk$set(echo = TRUE)
 ```
 
 # Data.
+
+## Intro.
+
+GpC sites are areas in eukaryotic DNA where a G followed by a C get connected with a phosphate atom. These sites are often found in promoters near transcription start sites of genes. The sites are regulated by methylation and seem to have roles in cancer and gene silencing and maybe even memory. The methylation is influenced by age and smoking is also claimed to have influence.
 
 ## Codebook.
 
 Below here you find a codebook explaining each variable.
 
-```{r}
+```{r codebook}
 codebook <- read.delim("codebook.txt", sep = ";")
-knitr::kable(codebook)
+kable(codebook, caption = "Table1: Codebook")
 ```
 
 ## Reading the data.
 
-Here we load in the data. I noticed when downloading not all genders had the same case so I made all genders upper-case.
+Here we load in the data. We noticed when downloading not all genders had the same case so we made all genders upper-case.
 
-```{r}
+```{r data_loading_and_gender_fix}
 my_data <- read.csv("data/Smoker_Epigenetic_df.csv")
-str(my_data)
 my_data$Gender <- toupper(my_data$Gender)
-summary(my_data)
-
 ```
+
+Now we do a 5 number summary this can be very useful when trying to find faults in the data. For readability we will look at the first 8 values.
+
+```{r summary, echo=T}
+pander(summary(my_data[1:8]))
+```
+
+Furthermore we noticed that there are 62 NA Methylation Ratios whilst doing the summary and decided to remove these rows.
+
+```{r, na_removal}
+my_data <- na.omit(my_data)
+```
+
+Looking more in depth at the summaries of the Methylation Ratios we notice that the median and mean not always align. This could be an indicator of skewed data.
 
 # Visualisation.
 
-```{r}
-ggplot(data = my_data, aes(Age, cg00050873, colour = factor(Gender), shape = factor(Smoking.Status))) +
-  geom_point()
+## Data Shape.
 
+To determine if the data is skewed we will visualize the Methylation Ratio using a histogram.
+
+```{r distribution}
+par(mfrow = c(2,4))
+for (name in colnames(my_data[5:24])) {
+  hist(my_data[, name], main = name, xlab = "Methylation Ratio")
+}
 ```
 
-# research.
+These histograms indicate that most data is not skewed but is in fact bimodal, this requires no further action now. However a couple of Methylation Ratios (cg02494853 & cg03706273) are skewed, further research is required to determine what actions will be taken if any.
 
-## research question.
+## Relationships.
 
-Is it possible to predict the Methylation of certain CpG islands, with patient data like age, gender and smoker status, using Machine Learning?
+Now to see if the data contains any patterns we will make 4 dimensional scatter-plots containing the first 5 Methylation Ratios.
+
+```{r plotting, echo=FALSE}
+ggplot(data = my_data, aes(Age, cg00050873, colour = factor(Gender), shape = factor(Smoking.Status))) +
+  ggtitle("Exploration of cg00050873") +
+  xlab("Patient Age (Years)") +
+  ylab("cg00050873 Methylation Ratio") +
+  scale_color_discrete(name = "Patient Gender") +
+  scale_shape_discrete(name = "Smoking Status") +
+  geom_point(alpha = 0.5)
+
+ggplot(data = my_data, aes(Age, cg00212031, colour = factor(Gender), shape = factor(Smoking.Status))) +
+  ggtitle("Exploration of cg00212031") +
+  xlab("Patient Age (Years)") +
+  ylab("cg00212031 Methylation Ratio") +
+  scale_color_discrete(name = "Patient Gender") +
+  scale_shape_discrete(name = "Smoking Status") +
+  geom_point(alpha = 0.5)
+
+ggplot(data = my_data, aes(Age, cg00213748, colour = factor(Gender), shape = factor(Smoking.Status))) +
+  ggtitle("Exploration of cg00213748") +
+  xlab("Patient Age (Years)") +
+  ylab("cg00213748 Methylation Ratio") +
+  scale_color_discrete(name = "Patient Gender") +
+  scale_shape_discrete(name = "Smoking Status") +
+  geom_point(alpha = 0.5)
+
+ggplot(data = my_data, aes(Age, cg00214611, colour = factor(Gender), shape = factor(Smoking.Status))) +
+  ggtitle("Exploration of cg00214611") +
+  xlab("Patient Age (Years)") +
+  ylab("cg00214611 Methylation Ratio") +
+  scale_color_discrete(name = "Patient Gender") +
+  scale_shape_discrete(name = "Smoking Status") +
+  geom_point(alpha = 0.5)
+
+ggplot(data = my_data, aes(Age, cg00455876, colour = factor(Gender), shape = factor(Smoking.Status))) +
+  ggtitle("Exploration of cg00455876") +
+  xlab("Patient Age (Years)") +
+  ylab("cg00455876 Methylation Ratio") +
+  scale_color_discrete(name = "Patient Gender") +
+  scale_shape_discrete(name = "Smoking Status") +
+  geom_point(alpha = 0.5)
+```
+
+At a quick glance it seems that gender seems to be a strong predictor for Methylation, we hope that when we take a more in depth look at the data using machine learning that we can find more patterns. Furthermore the fact that the data is divided in two clusters also explains why the histograms display bimodal data.
+
+```{r}
+pc_data <- my_data[5:24]
+data.pr <- prcomp((pc_data), center = T, scale. = T)
+fviz_pca_ind(data.pr, geom.ind = "point", pointshape = 21,
+             pointsize = 2,
+             fill.ind = my_data$Smoking.Status,
+             col.ind = "black",
+             palette = "jco",
+             addEllipses = T,
+             label = "var",
+             col.var = "black",
+             repel = T,
+             legend.title = "Smoking Status") +
+  ggtitle("PCA 2D Plot of Smoking Status") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+# Research.
+
+## Research question.
+
+Is it possible to link smoking to Methylation rates by predicting smoking status from Methylation rates. using machine learning
+
+# Machine Learning.
+
+To make the data useful for machine learning it needs to be "cleaned".
+
+## Data Preparation.
+
+luckily for us the data was already very clean already all we had to to was removing the identifiers (GSM) and the age and gender since they're not Methylation rates. And we also did some cleaning earlier removing the NAs.
+
+```{r}
+ml_data <- my_data[5:24]
+ml_data <- cbind(ml_data, my_data[2])
+write.csv(ml_data, file = "data/ml_data.csv", row.names = F)
+```
+
+## Algorithm Comparison.
+
+After running the cleaned data trough [weka](https://www.cs.waikato.ac.nz/ml/weka/) using standard ML algorithms these where the results.
+
+```{r}
+ml_invalid <- read.csv("data/ml_results_not_valid.csv")
+ml_valid <- read.csv("data/ml_results_valid.csv")
+kable(ml_invalid, caption = "UnCross-validated ML methods", align = "l")
+kable(ml_valid, caption = "Cross-validated ML methods", align = "l")
+```
+
+> *\*: significantly lower compared to ZeroR.*
+>
+> *v: significantly higher compared to ZeroR.*
+>
+> *significance determined by a (corrected) paired T Test* $\alpha$ *= 0.05*
+
+\newpage
+
+From these results we can gather that IBk is the best preforming algorithm with the highest although not significantly different from ZeroR accuracy, and the second highest area under the ROC-curve, IBk is also one of the fastest with 0.00 seconds taken.
+
+However these accuracies are still low and close to ZeroR, for this reason it seems wise to remove classifiers that yield the lowest amount of information. This might actually raise the accuracy of certain algorithms because, paradoxically too much information can be detrimental to accuracy.
+
+Weka has the select attributes feature and after using it we came to the conclusion that keeping: cg00050873, cg00212031, cg01707559 and cg02839557 will add the most information.
+
+```{r}
+ml_data_2 <- ml_data[c(1,2,6,12,21)]
+write.csv(ml_data_2, file = "data/ml_data_pruned.csv", row.names = F)
+```
+
+After cutting away the less useful data we came to these results.
+
+```{r}
+ml_short <- read.csv("data/ml_results_shortend.csv")
+kable(ml_short, caption = "Cross-validated ML methods on selected data", align = "l")
+```
+
+> *\*: significantly lower compared to ZeroR.*
+>
+> *v: significantly higher compared to ZeroR.*
+>
+> *significance determined by a (corrected) paired T Test* $\alpha$ *= 0.05*
+
+looking at the results from the above table using J48 at -M 6 would yield the best results.
